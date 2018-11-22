@@ -1,0 +1,19 @@
+
+Swing up a 1-link pendulum by applying torque to it.
+(This code references https://morvanzhou.github.io/tutorials/. Thanks!)
+
+
+How to run:
+$ python3 run_this.py
+
+# Dependency
+Python 3.6
+tkinter
+tensorflow
+etc.
+
+# Physical model
+see pendulum_env.py
+
+# Learning
+Deep Q-Network
