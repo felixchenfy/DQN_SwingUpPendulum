@@ -52,9 +52,9 @@ class RL_Pendulum(Pendulum):
         theta = angle_trans_to_pi(q)
 
         if abs(theta)>pi/2:
-            reward=dq**2
+            reward== -10 + dq**2
         else:
-            reward= -(theta**2 + 0.1*dq**2)
+            reward= -(theta**2 + 0.01*dq**2)
 
         # max_reward=pi
         # if abs(theta)<max_reward:
@@ -72,12 +72,12 @@ def run_pendulum():
 
     # for display
     dt_disp = 0.1
-    flag_real_time_display=False
-    display_after_n_step=(1000/observation_interval)
+    display_after_n_seconds=200
+    display_after_n_step=(display_after_n_seconds/observation_interval)
+    flag_real_time_display=True
 
     step = 0
     episode=0
-    env.reset_real_time()
     while True:
         episode+=1
 
@@ -96,7 +96,7 @@ def run_pendulum():
 
             RL.store_transition(states, action, reward, observation_)
 
-            if (step > 200) and (step % 20 == 0):
+            if (step > 200) and (step % 10 == 0):
                 RL.learn()
 
             # swap states
@@ -123,7 +123,10 @@ def run_pendulum():
 
                 # real time display, so sleep until simulation time
                 if flag_real_time_display:
-                    t_sleep = env.t_sim-env.get_real_time()
+                    if not hasattr(env, "start_display_"):
+                        env.start_display_=True
+                        env.reset_real_time()
+                    t_sleep = env.t_sim-display_after_n_seconds-env.get_real_time()
                     if t_sleep > 0:
                         time.sleep(t_sleep)
 
@@ -136,8 +139,8 @@ if __name__ == "__main__":
     # pendulum game
     env = RL_Pendulum()
     RL = DeepQNetwork(env.n_actions, env.n_features,
-                      learning_rate=0.01,
-                      reward_decay=0.9,
+                      learning_rate=0.005,
+                      reward_decay=0.99,
                       e_greedy=0.99,
                       replace_target_iter=200,
                       memory_size=2000,

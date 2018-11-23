@@ -38,7 +38,7 @@ class Pendulum(myWindow):
         except:
             None
 
-    def reset(self,q1=math.pi/2,dq1=0):
+    def reset(self, q1=math.pi/2, dq1=0):
         super(Pendulum, self).reset()
         self.reset_vars()
 
@@ -66,7 +66,7 @@ class Pendulum(myWindow):
 
         # simulation params
         self.t_sim=0.0
-        self.t_real0 = time.time()
+        # self.t_real0 = time.time() # This should be set manully through self.reset_real_time()
 
         # user input
         self.torque = 0
