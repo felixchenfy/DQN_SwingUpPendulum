@@ -72,7 +72,7 @@ class myWindow(object):
         # l.pack()    # 固定窗口位置
         # self.canvas.create_window(100, 100, window=l)
 
-    def reset_canvas(self):
+    def reset_canvas(self, link1_angle_=0, link2_angle_=0):
         self.canvas.delete("all")
 
         # coordinate
@@ -87,9 +87,9 @@ class myWindow(object):
         # configurations of size
 
         BASE_LINK_X = 200
-        BASE_LINK_Y = 400
+        BASE_LINK_Y = 300
         BASE_LINK_RADIUS = 10
-        BASE_LINK_COLOR = 'black'
+        BASE_LINK_COLOR = 'red'
 
         LINK1_LENGTH = 150
         LINK1_WIDTH = 10
@@ -97,7 +97,7 @@ class myWindow(object):
 
         LINK2_LENGTH = 10
         LINK2_WIDTH = 10
-        LINK2_COLOR = 'red'
+        LINK2_COLOR = 'green'
 
         ball_x = 9999
         ball_y = 9999
@@ -112,8 +112,8 @@ class myWindow(object):
         # configurations of dynamics: mass, inertia, force, friction, etc.
 
         # set variables
-        link1_angle = 0
-        link2_angle = 0
+        link1_angle = link1_angle_
+        link2_angle = link2_angle_
 
         # draw all staff
         # 1. base link
@@ -177,6 +177,9 @@ class myWindow(object):
         wall_left = self.canvas.create_rectangle(
             x0, y0, x1, y1, fill=WALL_COLOR)
 
+        # Add two light
+        self.add_two_lights()
+
         # put on staff onto canvas
         self.canvas.pack()
 
@@ -196,6 +199,35 @@ class myWindow(object):
         self.ball_x = ball_x
         self.ball_y = ball_y
         self.BALL_RADIUS = BALL_RADIUS
+
+    def add_two_lights(self):
+        LIGHT_RADIUS = 10
+        LIGHT_MID = self.WINDOW_COLS/2
+        LIGHT_OFFSET = self.WINDOW_COLS/4
+        LIGHT_Y=500
+
+        x0 = LIGHT_MID-LIGHT_OFFSET-LIGHT_RADIUS
+        y0 = LIGHT_Y-LIGHT_RADIUS
+        x1 = x0+LIGHT_RADIUS*2
+        y1 = y0+LIGHT_RADIUS*2
+
+        # var_light1_color = tk.StringVar()
+        # var_light1_color.set('black')
+        self.light1 = self.canvas.create_oval(x0, y0, x1, y1, fill="black")
+        # self.var_light1_color = var_light1_color
+
+        x0 = LIGHT_MID+LIGHT_OFFSET-LIGHT_RADIUS
+        y0 = LIGHT_Y-LIGHT_RADIUS
+        x1 = x0+LIGHT_RADIUS*2
+        y1 = y0+LIGHT_RADIUS*2
+
+        # var_light2_color = tk.StringVar()
+        # var_light2_color.set('black')
+        self.light2 = self.canvas.create_oval(x0, y0, x1, y1, fill="black")
+        # self.var_light2_color = var_light2_color
+
+        self.canvas.create_text(LIGHT_MID, LIGHT_Y, text="    User Input\n<--  Indicator -->", font=(
+            "Purisa", 15))
 
     def get_coords(self, obj):
         coords = self.canvas.coords(obj)
@@ -302,6 +334,12 @@ class myWindow(object):
 
     def mainloop(self):
         self.canvas.mainloop()
+
+    def after(self, time, func):
+        self.window.after(time, func)
+
+    def render(self):
+        self.canvas.update()
 
 
 def test_print():
