@@ -5,7 +5,7 @@ from RL_brain import DeepQNetwork
 
 def run_pendulum():
     step = 0
-    for episode in range(300):
+    for episode in range(1):
         # initial observation
         observation = env.reset()
 

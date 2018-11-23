@@ -12,9 +12,7 @@ import time
 class myWindow(object):
     def __init__(self):
         self.init_window()
-        self.restart()
-        self.bind_keys()
-        self.display_text()
+        self.reset()
         return
 
     def init_window(self):
@@ -34,6 +32,11 @@ class myWindow(object):
         # save window configs
         self.WINDOW_ROWS = WINDOW_ROWS
         self.WINDOW_COLS = WINDOW_COLS
+
+    def reset(self):
+        self.reset_canvas()
+        self.bind_keys()
+        self.display_text()
 
     def bind_keys(self):
         self.canvas.bind("<KeyPress>", self.event_KeyPress)
@@ -69,7 +72,7 @@ class myWindow(object):
         # l.pack()    # 固定窗口位置
         # self.canvas.create_window(100, 100, window=l)
 
-    def restart(self):
+    def reset_canvas(self):
         self.canvas.delete("all")
 
         # coordinate
@@ -264,7 +267,7 @@ class myWindow(object):
 
     def event_KeyRelease(self, e):
         return
-        
+
     def event_KeyPress(self, e):
         c = e.char.lower()
         # print('press down: %s, ind = %d ' %(c, ord(c)))
@@ -291,9 +294,9 @@ class myWindow(object):
         elif c == "l":
             self.move_ball(+dis, 0)
 
-        # restart
+        # reset
         elif c == 'q':
-            self.restart()
+            self.reset()
 
         return
 

@@ -28,10 +28,14 @@ dq[k+1]=dq[k]+ddq*dt
 q[k+1]=q[k]+dq*dt
 '''
 
-
 class Pendulum(myWindow):
     def __init__(self, dt_sim):
+        self.dt_sim = dt_sim
         super(Pendulum, self).__init__()
+        self.reset()
+
+    def reset(self):
+        super(Pendulum, self).reset()
 
         self.m = 1.0  # mass
         self.R = 1.0  # length
@@ -46,13 +50,14 @@ class Pendulum(myWindow):
         self.ddq = 0.0
 
         # simulation params
-        self.dt_sim = dt_sim
         self.t0 = time.time()
         self.t_ = 0.0
 
         # user input
         self.torque = 0
         # self.torque_effect_time=0.1
+        self.n_actions=3 # (1) no torque; (2) torque to left; (3) toruqe to right;
+        self.n_features=2 # q and dq
 
         # pre-compute some qualities
         self.I = 4*self.i + self.m*self.R**2
@@ -150,41 +155,44 @@ class Pendulum(myWindow):
         # str_text+="E/R: enable/disable simulation\n" # the sim engine is in "pendulum_env"
         self.display_text_(str_text)
 
-PRINT_INTERVAL = 1.0  # print for every PRINT_INTERVAL seconds
 
+    def run_simulation(self):
+    
+        PRINT_INTERVAL = 1.0  # print for every PRINT_INTERVAL seconds
+        dt_disp = 0.05
+        dt_sim = self.dt_sim
 
-def update():
-    pendulum.reset_time()
+        self.reset_time()
 
-    MAX_ITE = int(1000.0/dt_sim)
-    ite = 0
-    while ite < MAX_ITE:
-        ite += 1
+        MAX_ITE = int(1000.0/dt_sim)
+        ite = 0
+        while ite < MAX_ITE:
+            ite += 1
 
-        # update window
-        if ite % (dt_disp/dt_sim) == 0:
-            pendulum.canvas.update()
+            # update window
+            if ite % (dt_disp/dt_sim) == 0:
+                self.canvas.update()
 
-        # print time and q
-        if ite % (PRINT_INTERVAL/dt_sim) == 0:
-            print("t=%.2f, ddq=%.2f" %
-                  (pendulum.get_time(), pendulum.ddq))
+            # print time and q
+            if ite % (PRINT_INTERVAL/dt_sim) == 0:
+                print("t=%.2f, ddq=%.2f" %
+                    (self.get_time(), self.ddq))
 
-        # read current q from window
-        # (because user might reset the link's position)
-        pendulum.update_q_from_window()
+            # read current q from window
+            # (because user might reset the link's position)
+            self.update_q_from_window()
 
-        # do simulation
-        pendulum.update_states()
+            # do simulation
+            self.update_states()
 
-        # output to the window
-        pendulum.assign_q_to_window()
-        pendulum.rotate_link1_to(pendulum.link1_theta)
+            # output to the window
+            self.assign_q_to_window()
+            self.rotate_link1_to(self.link1_theta)
 
-        # sleep
-        t_sleep = ite*dt_sim-pendulum.get_time()
-        if t_sleep > 0:
-            time.sleep(t_sleep)
+            # sleep
+            t_sleep = ite*dt_sim-self.get_time()
+            if t_sleep > 0:
+                time.sleep(t_sleep)
 
 
 if __name__ == "__main__":
@@ -194,11 +202,9 @@ if __name__ == "__main__":
     except:
         None
 
-    dt_sim = 0.005
-    dt_disp = 0.05
 
-    pendulum = Pendulum(dt_sim)
-    pendulum.window.after(10, update)
+    pendulum = Pendulum(dt_sim = 0.005)
+    pendulum.window.after(10, pendulum.run_simulation)
     pendulum.mainloop()
     
     try:
