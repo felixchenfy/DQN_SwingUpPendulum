@@ -7,9 +7,13 @@ import time
 def angle_trans_to_pi(theta):# transform angle to [-pi, pi). When link1 is vertically upward, angle=0
     return (theta+pi) % (2*pi)-pi-pi/2
 
+# Choose a scenario
+Inverted_Pendulum=False
+Swing_Up_Pendulum=not Inverted_Pendulum
+
 class RL_Pendulum(Pendulum):
-    def __init__(self):
-        super(RL_Pendulum, self).__init__()
+    def __init__(self, q_init, dq_init):
+        super(RL_Pendulum, self).__init__(q_init, dq_init)
         self.action_space = ['o', 'l', 'r']
         # actions: (1) no torque; (2) torque to left(-); (3) toruqe to right(+);
         self.n_actions = len(self.action_space)
@@ -34,10 +38,10 @@ class RL_Pendulum(Pendulum):
         reward=self.compute_reward(states_)
         
         # compute stop event
-        if 0:
+        if Swing_Up_Pendulum:
             # for this problem, there is no completion of episode
             done=False 
-        else:
+        elif Inverted_Pendulum:
             theta = angle_trans_to_pi(states_[0])
             if abs(theta)>pi/6:
                 done=True
@@ -51,18 +55,12 @@ class RL_Pendulum(Pendulum):
         dq=states[1]
         theta = angle_trans_to_pi(q)
 
-        if abs(theta)>pi/2:
-            reward== -10 + dq**2
-        else:
-            reward= -(theta**2 + 0.01*dq**2)
-
-        # max_reward=pi
-        # if abs(theta)<max_reward:
-        #     reward=(max_reward-abs(theta))**3
+        # if abs(theta)>pi*2/3:
+            # reward= -10 + 0.1*dq**2
         # else:
-        #     reward=0
-
-        # reward+=5*min(1, abs(dq))
+            # reward= -(abs(theta)**3 + 0.1*dq**2)
+        reward= -(abs(theta)**3 + 0.1*dq**2)
+        
         return reward
 
 def run_pendulum():
@@ -72,9 +70,9 @@ def run_pendulum():
 
     # for display
     dt_disp = 0.1
-    display_after_n_seconds=200
+    display_after_n_seconds=3000
     display_after_n_step=(display_after_n_seconds/observation_interval)
-    flag_real_time_display=True
+    flag_real_time_display=False
 
     step = 0
     episode=0
@@ -125,8 +123,11 @@ def run_pendulum():
                 if flag_real_time_display:
                     if not hasattr(env, "start_display_"):
                         env.start_display_=True
-                        env.reset_real_time()
-                    t_sleep = env.t_sim-display_after_n_seconds-env.get_real_time()
+                        step_display=0
+                        t_current0=time.time()
+                    step_display+=1
+                    t_current=time.time()-t_current0
+                    t_sleep = step_display*dt_disp-t_current
                     if t_sleep > 0:
                         time.sleep(t_sleep)
 
@@ -137,15 +138,19 @@ def run_pendulum():
 
 if __name__ == "__main__":
     # pendulum game
-    env = RL_Pendulum()
+    if Swing_Up_Pendulum:
+        q_init=-pi/2
+    elif Inverted_Pendulum:
+        q_init=pi/2
+    env = RL_Pendulum(q_init=q_init, dq_init=0)
     RL = DeepQNetwork(env.n_actions, env.n_features,
                       learning_rate=0.005,
                       reward_decay=0.99,
-                      e_greedy=0.99,
-                      replace_target_iter=200,
-                      memory_size=2000,
+                      e_greedy=0.95,
+                      replace_target_iter=500,
+                      memory_size=3000,
                       flag_record_history=False,
-                      e_greedy_increment=0.001
+                      e_greedy_increment=None
                     #   output_graph=True
                       )
 

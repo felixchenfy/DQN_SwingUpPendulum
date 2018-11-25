@@ -29,21 +29,27 @@ q[k+1]=q[k]+dq*dt
 '''
 
 class Pendulum(myWindow):
-    def __init__(self, dt_sim=0.001):
+    def __init__(self, q1_init=-math.pi/2, dq1_init=0, dt_sim=0.001):
+
         self.dt_sim = dt_sim
+        self.q1_init=q1_init
+        self.dq1_init=dq1_init
+
         super(Pendulum, self).__init__()
-        self.reset()
+        # self.reset() # no need to call this. Already reset in "super.__init__()"
+
         try: # turn off continuous key input
             os.system('xset r off')
         except:
             None
 
-    def reset(self, q1=math.pi/2, dq1=0):
+    def reset(self):
         super(Pendulum, self).reset()
         self.reset_vars()
 
-        self.q=q1
-        self.dq=dq1
+        self.q=self.q1_init
+        self.dq=self.dq1_init
+
         self.assign_q_to_window()
         self.rotate_link1_to(self.link1_theta)
 
@@ -57,8 +63,8 @@ class Pendulum(myWindow):
         self.i = 1.0/3*self.m*self.R**2  # inertia
 
         self.g = 9.8
-        self.cf = 0.2  # coef of friction, where friction = - cf * dq
-        self.fNoise = 0.01
+        self.cf = 0.0  # coef of friction, where friction = - cf * dq
+        self.fNoise = 0.0
 
         self.q = 0.0
         self.dq = 0.0
@@ -70,7 +76,7 @@ class Pendulum(myWindow):
 
         # user input
         self.torque = 0
-        self.Torque_Maginitude=5
+        self.Torque_Maginitude=1
         # self.torque_effect_time=0.1
 
         # pre-compute some qualities
