@@ -12,8 +12,8 @@ Tensorflow: r1.2
 import numpy as np
 import tensorflow as tf
 
-np.random.seed(1)
-tf.set_random_seed(1)
+# np.random.seed(1)
+# tf.set_random_seed(1)
 
 
 # Deep Q Network off-policy
@@ -29,6 +29,7 @@ class DeepQNetwork:
             memory_size=500,
             batch_size=32,
             e_greedy_increment=0.001,
+            save_steps=-1,
             output_graph=False,
             flag_record_history=True,
     ):
@@ -43,7 +44,8 @@ class DeepQNetwork:
         self.epsilon_increment = e_greedy_increment
         self.epsilon = 0 if e_greedy_increment is not None else self.epsilon_max
         self.flag_record_history=flag_record_history
-        
+
+  
         # total learning step
         self.learn_step_counter = 0
 
@@ -53,6 +55,13 @@ class DeepQNetwork:
         # consist of [target_net, evaluate_net]
         self._build_net()
 
+        # save data
+        self.save_steps=save_steps
+        self.steps=0
+        self.saver = tf.train.Saver()
+        self.model_path = "tmp/model.ckpt"
+
+
         t_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='target_net')
         e_params = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='eval_net')
 
@@ -60,6 +69,7 @@ class DeepQNetwork:
             self.target_replace_op = [tf.assign(t, e) for t, e in zip(t_params, e_params)]
 
         self.sess = tf.Session()
+
 
         if output_graph:
             # $ tensorboard --logdir=logs
@@ -77,20 +87,52 @@ class DeepQNetwork:
 
         w_initializer, b_initializer = tf.random_normal_initializer(0., 0.3), tf.constant_initializer(0.1)
 
+
         # ------------------ build evaluate_net ------------------
-        n_neuron=30
+        n_neuron_laywer1=10
+        n_neuron_laywer2=10
         with tf.variable_scope('eval_net'):
-            e1 = tf.layers.dense(self.s, n_neuron, tf.nn.relu, kernel_initializer=w_initializer,
+            e1 = tf.layers.dense(self.s, n_neuron_laywer1, tf.nn.relu, kernel_initializer=w_initializer,
                                  bias_initializer=b_initializer, name='e1')
-            self.q_eval = tf.layers.dense(e1, self.n_actions, kernel_initializer=w_initializer,
+            e2 = tf.layers.dense(e1, n_neuron_laywer2, tf.nn.relu, kernel_initializer=w_initializer,
+                                 bias_initializer=b_initializer, name='e2')
+            self.q_eval = tf.layers.dense(e2, self.n_actions, kernel_initializer=w_initializer,
                                           bias_initializer=b_initializer, name='q')
 
         # ------------------ build target_net ------------------
         with tf.variable_scope('target_net'):
-            t1 = tf.layers.dense(self.s_, n_neuron, tf.nn.relu, kernel_initializer=w_initializer,
+            t1 = tf.layers.dense(self.s_, n_neuron_laywer1, tf.nn.relu, kernel_initializer=w_initializer,
                                  bias_initializer=b_initializer, name='t1')
-            self.q_next = tf.layers.dense(t1, self.n_actions, kernel_initializer=w_initializer,
-                                          bias_initializer=b_initializer, name='t2')
+            t2 = tf.layers.dense(t1, n_neuron_laywer1, tf.nn.relu, kernel_initializer=w_initializer,
+                                 bias_initializer=b_initializer, name='t2')
+            self.q_next = tf.layers.dense(t2, self.n_actions, kernel_initializer=w_initializer,
+                                          bias_initializer=b_initializer, name='q_next')
+
+
+        # # ------------------ build evaluate_net ------------------
+        # n_neuron_laywer1=10
+        # n_neuron_laywer2=10
+        # dropout_rate=0.25
+        # with tf.variable_scope('eval_net'):
+        #     e1 = tf.layers.dense(self.s, n_neuron_laywer1, tf.nn.relu, kernel_initializer=w_initializer,
+        #                          bias_initializer=b_initializer, name='e1')
+        #     dropout1 = tf.layers.dropout(e1, rate=dropout_rate)
+        #     e2 = tf.layers.dense(dropout1, n_neuron_laywer2, tf.nn.relu, kernel_initializer=w_initializer,
+        #                          bias_initializer=b_initializer, name='e2')
+        #     dropout2 = tf.layers.dropout(e2, rate=dropout_rate)
+        #     self.q_eval = tf.layers.dense(dropout2, self.n_actions, tf.nn.softmax, kernel_initializer=w_initializer,
+        #                                   bias_initializer=b_initializer, name='q')
+
+        # # ------------------ build target_net ------------------
+        # with tf.variable_scope('target_net'):
+        #     t1 = tf.layers.dense(self.s_, n_neuron_laywer1, tf.nn.relu, kernel_initializer=w_initializer,
+        #                          bias_initializer=b_initializer, name='t1')
+        #     dropout1 = tf.layers.dropout(t1, rate=dropout_rate)
+        #     t2 = tf.layers.dense(dropout1, n_neuron_laywer2, tf.nn.relu, kernel_initializer=w_initializer,
+        #                          bias_initializer=b_initializer, name='t2')
+        #     dropout2 = tf.layers.dropout(t2, rate=dropout_rate)
+        #     self.q_next = tf.layers.dense(dropout2, self.n_actions, tf.nn.softmax, kernel_initializer=w_initializer,
+        #                                   bias_initializer=b_initializer, name='q_next')
 
         with tf.variable_scope('q_target'):
             q_target = self.r + self.gamma * tf.reduce_max(self.q_next, axis=1, name='Qmax_s_')    # shape=(None, )
@@ -98,8 +140,10 @@ class DeepQNetwork:
         with tf.variable_scope('q_eval'):
             a_indices = tf.stack([tf.range(tf.shape(self.a)[0], dtype=tf.int32), self.a], axis=1)
             self.q_eval_wrt_a = tf.gather_nd(params=self.q_eval, indices=a_indices)    # shape=(None, )
+
         with tf.variable_scope('loss'):
             self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, self.q_eval_wrt_a, name='TD_error'))
+
         with tf.variable_scope('train'):
             self._train_op = tf.train.RMSPropOptimizer(self.lr).minimize(self.loss)
 
@@ -148,10 +192,20 @@ class DeepQNetwork:
         if self.flag_record_history:
             self.cost_his.append(cost)
 
+        self.steps+=1
+        if self.save_steps>0 and self.steps%self.save_steps==0:
+            self.save_model()
+            
         # increasing epsilon
         self.epsilon = self.epsilon + self.epsilon_increment if self.epsilon < self.epsilon_max else self.epsilon_max
         self.learn_step_counter += 1
 
+    def save_model(self, model_path=None):
+        if model_path is None:
+            model_path=self.model_path
+        save_path = self.saver.save(self.sess, model_path)
+        print("\nsave weights to %s"%save_path)
+        
     def plot_cost(self):
         import matplotlib.pyplot as plt
         plt.plot(np.arange(len(self.cost_his)), self.cost_his)

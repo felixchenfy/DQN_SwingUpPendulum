@@ -6,6 +6,7 @@ import os
 from pendulum_window import myWindow
 import time
 from Lunge_Kutta import rK3  # Lunge-Kutta Integration method
+from math import pi
 
 '''
 # Simulation
@@ -28,6 +29,13 @@ dq[k+1]=dq[k]+ddq*dt
 q[k+1]=q[k]+dq*dt
 '''
 
+# Choose a scenario
+Inverted_Pendulum=True
+Swing_Up_Pendulum=not Inverted_Pendulum
+
+def angle_trans_to_pi(theta):
+    return theta % (2*pi)
+
 class Pendulum(myWindow):
     def __init__(self, q1_init=-math.pi/2, dq1_init=0, dt_sim=0.001):
 
@@ -36,24 +44,38 @@ class Pendulum(myWindow):
         self.dq1_init=dq1_init
 
         super(Pendulum, self).__init__()
-        # self.reset() # no need to call this. Already reset in "super.__init__()"
 
         try: # turn off continuous key input
             os.system('xset r off')
         except:
             None
+    
+    # def get_states(self):
+    #     q=self.dq
+    #     dq=self.dq
+    #     return np.array([q, dq])
 
-    def reset(self):
+    def reset(self, q1_init=None, dq1_init=None):
         super(Pendulum, self).reset()
         self.reset_vars()
 
-        self.q=self.q1_init
-        self.dq=self.dq1_init
+        if q1_init is None:
+            q1_init=self.q1_init
+        self.q=q1_init
+
+        if dq1_init is None:
+            dq1_init=self.dq1_init
+        self.dq=dq1_init
 
         self.assign_q_to_window()
         self.rotate_link1_to(self.link1_theta)
 
         return self.get_states() # [q, dq]
+
+    def get_states(self):
+        q=self.q
+        dq=self.dq
+        return np.array([q, dq])
 
     def reset_vars(self):
         super(Pendulum, self).reset()
@@ -63,8 +85,8 @@ class Pendulum(myWindow):
         self.i = 1.0/3*self.m*self.R**2  # inertia
 
         self.g = 9.8
-        self.cf = 0.0  # coef of friction, where friction = - cf * dq
-        self.fNoise = 0.0
+        self.cf = 0.1  # coef of friction, where friction = - cf * dq
+        self.fNoise = 0.001
 
         self.q = 0.0
         self.dq = 0.0
@@ -76,8 +98,7 @@ class Pendulum(myWindow):
 
         # user input
         self.torque = 0
-        self.Torque_Maginitude=1
-        # self.torque_effect_time=0.1
+        self.Torque_Maginitude=2 # This is used for setting self.torque
 
         # pre-compute some qualities
         self.I = 4*self.i + self.m*self.R**2
@@ -85,9 +106,6 @@ class Pendulum(myWindow):
         
         # others
         self.reset_real_time()
-
-    def get_states(self):
-        return np.array([self.q, self.dq])
 
     def update_q_from_window(self):
         self.q = -self.link1_theta
@@ -132,7 +150,7 @@ class Pendulum(myWindow):
             c = 0  # here ddq() is not depend on t, so let t=0
             dq, q, _ = rK3(a, b, c, self.fa_, self.fb_, self.fc_, dt)
 
-        self.q = q
+        self.q = angle_trans_to_pi(q)
         self.dq = dq
 
     def reset_real_time(self):
@@ -228,7 +246,14 @@ class Pendulum(myWindow):
 if __name__ == "__main__":
     # b = tk.Button(window, text='move', command=moveit).pack()
  
-    pendulum = Pendulum(dt_sim = 0.001)
+
+    # pendulum game
+    if Swing_Up_Pendulum:
+        q_init=-pi/2
+    elif Inverted_Pendulum:
+        q_init=pi/2
+    pendulum = Pendulum(q1_init=q_init, dq1_init=0, dt_sim = 0.001)
+
     pendulum.after(10, pendulum.run_simulation)
     pendulum.mainloop()
     
