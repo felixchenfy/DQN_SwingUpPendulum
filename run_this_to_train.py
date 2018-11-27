@@ -6,14 +6,17 @@ import time, math
 import numpy as np
 
 
-def angle_trans_to_pi(theta):# transform angle to [-pi, pi). When link1 is vertically upward, angle=0
-    return (theta+pi) % (2*pi)-pi-pi/2
+def trans_angle(theta):# transform angle to [-pi, pi). When link1 is vertically upward, angle=0
+    return (theta-pi/2+pi) % (2*pi)-pi
+    
 
 # Choose a scenario
 Inverted_Pendulum=True
 Swing_Up_Pendulum=not Inverted_Pendulum
 
+# Whether use random initial position (q, dq)
 Random_Init=False
+Max_Steps_Per_Episode=4000
 
 # set mode
 Training_Mode=True
@@ -28,9 +31,11 @@ if Training_Mode:
     dt_disp = 0.1
     display_after_n_seconds=0
     flag_real_time_display=False
+    # flag_real_time_display=True
+
 
 if Testing_Mode:
-    load_path="./good_weights_upward_pendulum/model.ckpt"
+    load_path="./tmp/model.ckpt"
 
     dt_disp = 0.01 # display for every dt_disp seconds
     display_after_n_seconds=0
@@ -54,10 +59,10 @@ class RL_Pendulum(Pendulum):
     def get_states_for_DL(self):
         q=self.q
         dq=self.dq
-        # x=math.cos(q)
-        # y=math.sin(q)
-        # return np.array([x, y, dq])
-        return np.array([q, dq])
+        x=math.cos(q)
+        y=math.sin(q)
+        return np.array([x, y, dq])
+        # return np.array([q, dq])
 
     def step(self, action, time):
         self.action=action
@@ -70,7 +75,7 @@ class RL_Pendulum(Pendulum):
 
         # compute next states
         self.update_states(sim_time_length=time)
-        states_new_xydq=self.get_states_for_DL()
+        states_new_for_DL=self.get_states_for_DL()
         states_new=self.get_states()
         
         # compute reward
@@ -81,28 +86,27 @@ class RL_Pendulum(Pendulum):
             # for this problem, there is no completion of episode
             done=False 
         elif Inverted_Pendulum:
-            theta = angle_trans_to_pi(states_new[0])
+            theta = trans_angle(states_new[0])
             if abs(theta)>pi/6:
                 done=True
             else:
                 done=False
 
         # return states_new_xydq, reward, done
-        return states_new, reward, done
+        return states_new_for_DL, reward, done
 
     def compute_reward(self, states):
         q=states[0]
-        dq=states[1]
-        theta = angle_trans_to_pi(q)
+        dq=abs(states[1])
+        theta = trans_angle(q)
 
         # reward
-        # if abs(theta)>pi*1.0/2:
-        #     reward= -300 + 100*min(1.0, dq)**2
-        # else:
-        #     reward= -(100*abs(theta)**2 + dq**2)
+        r = lambda theta_, dq_: -(abs(theta_)**3 + 0.01*dq_**2)
+        if abs(theta)<pi*2/3:
+            reward= r(theta,dq)
+        else:
+            reward= r(pi*2/3,4)-(4.0-dq)**2
 
-        reward= -(abs(theta)**2 + 0.01*dq**2)
-        
         return reward
 
 
@@ -128,6 +132,7 @@ def run_pendulum(observation_interval_=0.01):
     # start
     step = 0
     episode=0
+
     while True:
         episode+=1
 
@@ -137,15 +142,22 @@ def run_pendulum(observation_interval_=0.01):
                 q1_init=(np.random.random()-0.5) *pi/3 /1.1+pi/2
                 states = env.reset(q1_init=q1_init,dq1_init=0)
             if Swing_Up_Pendulum:
-                None
+                q1_init=np.random.random()*pi
+                dq1_init=(np.random.random()-0.5)*4
+                states = env.reset(q1_init=q1_init,dq1_init=dq1_init)
         else:
             states = env.reset()
             
-            
+        episode_steps=0
         while True:
-            
+
+            # check max steps
+            if episode_steps==Max_Steps_Per_Episode:
+                break
+            episode_steps+=1
+
             if step%100==0:
-                print("episode=%d, step=%d, time=%.2f"%(episode,step,env.t_sim))
+                print("episode=%d, episode_step=%d, total steps=%d, time=%.2f"%(episode,episode_steps, step,env.t_sim))
 
             # RL choose action based on states
             action = RL.choose_action(states)
@@ -155,7 +167,7 @@ def run_pendulum(observation_interval_=0.01):
 
             RL.store_transition(states, action, reward, observation_)
 
-            if (step > 200) and (step % 5 == 0):
+            if (step > 200) and (step % 20 == 0):
                 RL.learn()
 
             # swap states
@@ -207,7 +219,7 @@ if __name__ == "__main__":
 
     # deep Q-network
     if Training_Mode:
-        e_greedy=0.90
+        e_greedy=0.9
     else: # testing mode
         e_greedy=1.0
 
@@ -215,10 +227,11 @@ if __name__ == "__main__":
                         learning_rate=0.005,
                         reward_decay=0.95,
                         e_greedy=e_greedy,
-                        replace_target_iter=200,
-                        memory_size=3000,
+                        replace_target_iter=500,
+                        batch_size=256,
+                        memory_size=8000,
                         flag_record_history=False,
-                        e_greedy_increment=0.001,
+                        e_greedy_increment=None,
                         #   output_graph=True,
                     )
 
