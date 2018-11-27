@@ -60,7 +60,10 @@ class RL_Pendulum(Pendulum):
         return
 
     def reset(self, q1_init=None, dq1_init=None):
-        super(RL_Pendulum, self).reset(self.state0_init+Q_OFFSET, self.state1_init)
+        if q1_init is None:
+            super(RL_Pendulum, self).reset(self.state0_init+Q_OFFSET, self.state1_init)
+        else:
+            super(RL_Pendulum, self).reset(q1_init+Q_OFFSET, dq1_init)
         return self.get_states_for_DL()
 
     def get_states(self):
