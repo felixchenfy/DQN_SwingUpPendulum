@@ -23,7 +23,7 @@ else:
     Max_Steps_Per_Episode=4000
 
 # set mode
-Training_Mode=True
+Training_Mode=False
 Testing_Mode=not Training_Mode
 
 # set weights input/output
@@ -60,7 +60,11 @@ class RL_Pendulum(Pendulum):
         return
 
     def reset(self, q1_init=None, dq1_init=None):
-        super(RL_Pendulum, self).reset(self.state0_init+Q_OFFSET, self.state1_init)
+        if q1_init is None:
+            super(RL_Pendulum, self).reset(self.state0_init+Q_OFFSET, self.state1_init)
+        else:
+            super(RL_Pendulum, self).reset(q1_init+Q_OFFSET, dq1_init)
+
         return self.get_states_for_DL()
 
     def get_states(self):
@@ -187,7 +191,7 @@ def run_pendulum(observation_interval_=0.01):
 
             RL.store_transition(states, action, reward, observation_)
 
-            if (step > 200) and (step % 10 == 0):
+            if (step > 200) and (step % 20 == 0):
                 RL.learn()
 
             # swap states
@@ -244,11 +248,11 @@ if __name__ == "__main__":
         e_greedy=1.0
 
     RL = DeepQNetwork(env.n_actions, env.n_features,
-                        learning_rate=0.005,
+                        learning_rate=0.001,
                         reward_decay=0.95,
                         e_greedy=e_greedy,
                         replace_target_iter=500,
-                        batch_size=256,
+                        batch_size=128,
                         memory_size=8000,
                         flag_record_history=False,
                         e_greedy_increment=None,
