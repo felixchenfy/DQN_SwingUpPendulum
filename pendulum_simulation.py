@@ -1,4 +1,15 @@
 
+# This scripts adds the physical model (dynamics) to the 1-link pendulum
+# You can use keypress "j" and "k" to apply torque to control the pendulum.
+
+# Note:
+# In pendulum_window.py, configuration is called:
+#       "self.link1_theta"
+# However, here the parameter is called:
+#       "self.q", "self.dq".
+# I put it in this way to seperate the "dynamics" and "image display",
+# because there units might be different (e.g., 1 pixel versus 1 meter).
+
 import tkinter as tk
 import numpy as np
 import math
@@ -9,7 +20,7 @@ from Lunge_Kutta import rK3  # Lunge-Kutta Integration method
 from math import pi
 
 '''
-# Simulation
+# Description of Simulation 
 
 ## Physical model
 link: mass m, inertia i, length R, gravity g
@@ -19,19 +30,25 @@ noise: fNoise=Gaussian(mean=0, std)
 
 ## Dynamics
 configuration variable: q=theta
-Lag = 1/2*m*(R/2*q'[t])^2 + 1/2*i*(q'[t])^2 - m*g*(1 - Cos[q[t]])
+LLagrange equation: 1/2*m*(R/2*q'[t])^2 + 1/2*i*(q'[t])^2 - m*g*(1 - Cos[q[t]])
 Eular-Lagrange equations: D[D[Lag, q'[t]], t] - D[Lag, q[t]] == -cf*q'[t] + fNoise
 by solving E-L eqs, we get q''[t]
 
-## Update Law: Eular-Integration
-ddq = compute_ddq()
-dq[k+1]=dq[k]+ddq*dt
-q[k+1]=q[k]+dq*dt
+## Update Law:
+1. Eular-Integration 
+    ddq = compute_ddq()
+    dq[k+1]=dq[k]+ddq*dt
+    q[k+1]=q[k]+dq*dt
+2. Lunge Kutta
+
 '''
 
 # Choose a scenario
 Inverted_Pendulum=True
 Swing_Up_Pendulum=not Inverted_Pendulum
+
+# Main parameters
+
 
 def angle_trans_to_pi(theta):
     return theta % (2*pi)
@@ -39,9 +56,9 @@ def angle_trans_to_pi(theta):
 class Pendulum(myWindow):
     def __init__(self, q1_init=-math.pi/2, dq1_init=0, dt_sim=0.001):
 
-        self.dt_sim = dt_sim
-        self.q1_init=q1_init
-        self.dq1_init=dq1_init
+        self.dt_sim = dt_sim # simulation time period
+        self.q1_init=q1_init # initial angle of link1
+        self.dq1_init=dq1_init # initial angular velocity of link1
 
         super(Pendulum, self).__init__()
 
@@ -50,26 +67,21 @@ class Pendulum(myWindow):
         except:
             None
     
-    # def get_states(self):
-    #     q=self.dq
-    #     dq=self.dq
-    #     return np.array([q, dq])
-
+    # reset link1 to (q1_init, dq1_init)
     def reset(self, q1_init=None, dq1_init=None):
-        super(Pendulum, self).reset()
-        self.reset_vars()
 
-        if q1_init is None:
-            q1_init=self.q1_init
-        self.q=q1_init
+        # first reset all
+        super(Pendulum, self).reset() # call parent function to reset the canvas
+        self.reset_vars() # reset the dynamics parameters
 
-        if dq1_init is None:
-            dq1_init=self.dq1_init
-        self.dq=dq1_init
+        # then, deal with the case if user want to reset pendulum to a specified position
+        if q1_init is not None:
+            self.q=q1_init
+            self.dq=dq1_init
+            self.assign_q_to_window()
+            self.rotate_link1_to(self.link1_theta)
 
-        self.assign_q_to_window()
-        self.rotate_link1_to(self.link1_theta)
-
+        # return the states after reset
         return self.get_states() # [q, dq]
 
     def get_states(self):

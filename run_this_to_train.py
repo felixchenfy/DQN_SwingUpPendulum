@@ -5,11 +5,10 @@ from math import pi
 import time, math
 import numpy as np
 
+# transform angle to [-pi, pi). When link1 is vertically upward, angle=0
 Q_OFFSET=pi/2
-def trans_angle(theta):# transform angle to [-pi, pi). When link1 is vertically upward, angle=0
+def trans_angle(theta):
     return (theta-Q_OFFSET+pi) % (2*pi)-pi
-# theta=pi/2, return 0
-# theta=pi/2+0.1, return 0.1
 
 # Choose a scenario
 Inverted_Pendulum=False
@@ -20,15 +19,18 @@ Training_Mode=False
 Testing_Mode=not Training_Mode
 
 # Whether use random initial position (q, dq)
-Random_Init=True
+Random_Init_Pose=True
 
 # Max steps per episode
 if Inverted_Pendulum:
     Max_Steps_Per_Episode=1000
 if Swing_Up_Pendulum:
     Max_Steps_Per_Episode=2000
-    if Testing_Mode:
-        Max_Steps_Per_Episode=1000
+if Testing_Mode: 
+    Max_Steps_Per_Episode=800 # test for only 8 seconds
+
+# time period of taking action and observation
+observation_interval=0.01 # seconds
 
 
 # set weights input/output
@@ -37,7 +39,7 @@ if Training_Mode:
     # load_path=None
     save_path="./tmp/model.ckpt"
 
-    dt_disp = 0.1
+    dt_disp = 0.1 # display for every dt_disp seconds. 
     display_after_n_seconds=0
     flag_real_time_display=False
     # flag_real_time_display=True
@@ -46,7 +48,7 @@ if Training_Mode:
 if Testing_Mode:
     load_path="./tmp/model.ckpt"
 
-    dt_disp = 0.01 # display for every dt_disp seconds
+    dt_disp = 0.01 # display for every dt_disp seconds. Set high to display more smoothly
     display_after_n_seconds=0
     flag_real_time_display=True
 
@@ -134,10 +136,7 @@ class RL_Pendulum(Pendulum):
 
 
 
-def run_pendulum(observation_interval_=0.01):
-
-   # learning frequency
-    observation_interval=observation_interval_ # seconds. How long to make a new observation of states.
+def run_pendulum():
 
     # print mode
     print("What mode? Is Testing_Mode ? {}".format(Testing_Mode==True))
@@ -159,7 +158,7 @@ def run_pendulum(observation_interval_=0.01):
     while True:
         episode+=1
         # initial states
-        if Random_Init is True:
+        if Random_Init_Pose is True:
             dq_random_max=2
             if Inverted_Pendulum:
                 q_random_max=pi/3
@@ -195,7 +194,7 @@ def run_pendulum(observation_interval_=0.01):
 
             RL.store_transition(states, action, reward, observation_)
 
-            if (step > 200) and (step % 10 == 0):
+            if (step > 1000) and (step % 10 == 0):
                 RL.learn()
 
             # swap states
@@ -256,8 +255,8 @@ if __name__ == "__main__":
                         reward_decay=0.995,
                         e_greedy=e_greedy,
                         replace_target_iter=200,
-                        batch_size=256,
-                        memory_size=8000,
+                        batch_size=128,
+                        memory_size=4000,
                         flag_record_history=False,
                         e_greedy_increment=None,
                         #   output_graph=True,
