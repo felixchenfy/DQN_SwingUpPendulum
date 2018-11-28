@@ -15,16 +15,21 @@ def trans_angle(theta):# transform angle to [-pi, pi). When link1 is vertically 
 Inverted_Pendulum=False
 Swing_Up_Pendulum=not Inverted_Pendulum
 
-# Whether use random initial position (q, dq)
-Random_Init=False
-if Inverted_Pendulum:
-    Max_Steps_Per_Episode=1000
-else:
-    Max_Steps_Per_Episode=2000
-
 # set mode
 Training_Mode=False
 Testing_Mode=not Training_Mode
+
+# Whether use random initial position (q, dq)
+Random_Init=True
+
+# Max steps per episode
+if Inverted_Pendulum:
+    Max_Steps_Per_Episode=1000
+if Swing_Up_Pendulum:
+    Max_Steps_Per_Episode=2000
+    if Testing_Mode:
+        Max_Steps_Per_Episode=1000
+
 
 # set weights input/output
 if Training_Mode:
