@@ -16,7 +16,7 @@ Inverted_Pendulum=False
 Swing_Up_Pendulum=not Inverted_Pendulum
 
 # Whether use random initial position (q, dq)
-Random_Init=True
+Random_Init=False
 if Inverted_Pendulum:
     Max_Steps_Per_Episode=1000
 else:
