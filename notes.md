@@ -36,5 +36,9 @@ r = lambda theta_, dq_: -(theta_**2 + 0.01*dq_**2)
 dq比重增加后，pend就倾向于在delta_theta的位置保持不动，而不会使theta=0。
 结论：还是用theta**2吧。
 
-
+# 
+==固定的初始化，很迷，根本没收敛。所以还得要随机初始化，然后随机的频率高一点，使得更多次的抵达终点。
+==我减小了learning_rate和reward_decy，似乎突然变好了？
+    learning_rate=0.0005,
+    reward_decay=0.995,
 

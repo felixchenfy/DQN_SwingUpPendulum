@@ -20,10 +20,10 @@ Random_Init=True
 if Inverted_Pendulum:
     Max_Steps_Per_Episode=1000
 else:
-    Max_Steps_Per_Episode=4000
+    Max_Steps_Per_Episode=2000
 
 # set mode
-Training_Mode=True
+Training_Mode=False
 Testing_Mode=not Training_Mode
 
 # set weights input/output
@@ -247,10 +247,10 @@ if __name__ == "__main__":
         e_greedy=1.0
 
     RL = DeepQNetwork(env.n_actions, env.n_features,
-                        learning_rate=0.005,
-                        reward_decay=0.95,
+                        learning_rate=0.0005,
+                        reward_decay=0.995,
                         e_greedy=e_greedy,
-                        replace_target_iter=500,
+                        replace_target_iter=200,
                         batch_size=256,
                         memory_size=8000,
                         flag_record_history=False,
