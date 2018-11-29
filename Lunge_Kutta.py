@@ -1,5 +1,9 @@
-# copied from here:
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+# This is mainly copied from here:
 # https://www.codeproject.com/Tips/792927/Fourth-Order-Runge-Kutta-Method-in-Python
+
 
 import math
 

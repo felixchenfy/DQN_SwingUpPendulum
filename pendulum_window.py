@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 # This script creates a canvas where there is a single pendulum
 # (Though I created 2 links, 1 ball, and several walls, I didn't show them all in canvas.)

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 # This scripts adds the physical model (dynamics) to the 1-link pendulum
 # You can use keypress "j" and "k" to apply torque to control the pendulum.
@@ -48,11 +50,15 @@ Inverted_Pendulum=True
 Swing_Up_Pendulum=not Inverted_Pendulum
 
 # Main parameters
+Friction_Coefficient=0.1
+Torque_Maginitude=2
+Force_Noise=0.01
 
-
+# trans angle to [0, 2*pi]
 def angle_trans_to_pi(theta):
     return theta % (2*pi)
 
+# main class
 class Pendulum(myWindow):
     def __init__(self, q1_init=-math.pi/2, dq1_init=0, dt_sim=0.001):
 
@@ -97,8 +103,8 @@ class Pendulum(myWindow):
         self.i = 1.0/3*self.m*self.R**2  # inertia
 
         self.g = 9.8
-        self.cf = 0.1  # coef of friction, where friction = - cf * dq
-        self.fNoise = 0.001
+        self.cf = Friction_Coefficient  # coef of friction, where friction = - cf * dq
+        self.fNoise = Force_Noise
 
         self.q = 0.0
         self.dq = 0.0
@@ -110,7 +116,7 @@ class Pendulum(myWindow):
 
         # user input
         self.torque = 0
-        self.Torque_Maginitude=2 # This is used for setting self.torque
+        self.Torque_Maginitude=Torque_Maginitude # self.torque = 0, +, - Torque_Maginitude
 
         # pre-compute some qualities
         self.I = 4*self.i + self.m*self.R**2
@@ -258,7 +264,6 @@ class Pendulum(myWindow):
 if __name__ == "__main__":
     # b = tk.Button(window, text='move', command=moveit).pack()
  
-
     # pendulum game
     if Swing_Up_Pendulum:
         q_init=-pi/2
@@ -266,7 +271,7 @@ if __name__ == "__main__":
         q_init=pi/2
     pendulum = Pendulum(q1_init=q_init, dq1_init=0, dt_sim = 0.001)
 
-    pendulum.after(10, pendulum.run_simulation)
+    pendulum.after(10, pendulum.run_simulation) # after 10ms, run run_simulation
     pendulum.mainloop()
     
     try:

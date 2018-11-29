@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 from pendulum_simulation import Pendulum
 from RL_brain import DeepQNetwork
@@ -15,11 +17,11 @@ Inverted_Pendulum=False
 Swing_Up_Pendulum=not Inverted_Pendulum
 
 # set mode
-Training_Mode=False
+Training_Mode=True
 Testing_Mode=not Training_Mode
 
 # Whether use random initial position (q, dq)
-Random_Init_Pose=True
+Random_Init_Pose=False
 
 # Max steps per episode
 if Inverted_Pendulum:
