@@ -21,7 +21,7 @@ class DeepQNetwork:
     def __init__(
             self,
             n_actions,
-            n_features,
+            n_states,
             learning_rate=0.01,
             reward_decay=0.8,
             e_greedy=0.9,
@@ -34,7 +34,7 @@ class DeepQNetwork:
             flag_record_history=True,
     ):
         self.n_actions = n_actions
-        self.n_features = n_features
+        self.n_states = n_states
         self.lr = learning_rate
         self.gamma = reward_decay
         self.epsilon_max = e_greedy
@@ -50,7 +50,7 @@ class DeepQNetwork:
         self.learn_step_counter = 0
 
         # initialize zero memory [s, a, r, s_]
-        self.memory = np.zeros((self.memory_size, n_features * 2 + 2))
+        self.memory = np.zeros((self.memory_size, n_states * 2 + 2))
 
         # consist of [target_net, evaluate_net]
         self._build_net()
@@ -80,8 +80,8 @@ class DeepQNetwork:
 
     def _build_net(self):
         # ------------------ all inputs ------------------------
-        self.s = tf.placeholder(tf.float32, [None, self.n_features], name='s')  # input State
-        self.s_ = tf.placeholder(tf.float32, [None, self.n_features], name='s_')  # input Next State
+        self.s = tf.placeholder(tf.float32, [None, self.n_states], name='s')  # input State
+        self.s_ = tf.placeholder(tf.float32, [None, self.n_states], name='s_')  # input Next State
         self.r = tf.placeholder(tf.float32, [None, ], name='r')  # input Reward
         self.a = tf.placeholder(tf.int32, [None, ], name='a')  # input Action
 
@@ -125,6 +125,7 @@ class DeepQNetwork:
 
 
         # # ------------------ build evaluate_net ------------------
+        # # This doesn't work
         # n_neuron_laywer1=10
         # n_neuron_laywer2=10
         # dropout_rate=0.25
@@ -171,13 +172,13 @@ class DeepQNetwork:
         self.memory[index, :] = transition
         self.memory_counter += 1
 
-    def choose_action(self, observation):
+    def choose_action(self, states):
         # to have batch dimension when feed into tf placeholder
-        observation = observation[np.newaxis, :]
+        states = states[np.newaxis, :]
 
         if np.random.uniform() < self.epsilon:
-            # forward feed the observation and get q value for every actions
-            actions_value = self.sess.run(self.q_eval, feed_dict={self.s: observation})
+            # forward feed the states and get q value for every actions
+            actions_value = self.sess.run(self.q_eval, feed_dict={self.s: states})
             action = np.argmax(actions_value)
         else:
             action = np.random.randint(0, self.n_actions)
@@ -199,10 +200,10 @@ class DeepQNetwork:
         _, cost = self.sess.run(
             [self._train_op, self.loss],
             feed_dict={
-                self.s: batch_memory[:, :self.n_features],
-                self.a: batch_memory[:, self.n_features],
-                self.r: batch_memory[:, self.n_features + 1],
-                self.s_: batch_memory[:, -self.n_features:],
+                self.s: batch_memory[:, :self.n_states],
+                self.a: batch_memory[:, self.n_states],
+                self.r: batch_memory[:, self.n_states + 1],
+                self.s_: batch_memory[:, -self.n_states:],
             })
         if self.flag_record_history:
             self.cost_his.append(cost)

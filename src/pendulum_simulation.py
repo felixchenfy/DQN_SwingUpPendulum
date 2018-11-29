@@ -15,11 +15,16 @@
 import tkinter as tk
 import numpy as np
 import math
-import os
-from pendulum_window import myWindow
 import time
-from Lunge_Kutta import rK3  # Lunge-Kutta Integration method
 from math import pi
+
+import sys, os
+PROJECT_PATH=os.path.join(os.path.dirname(__file__))+ "/../"
+sys.path.append(PROJECT_PATH)
+
+from lib.Lunge_Kutta import rK3  # Lunge-Kutta Integration method
+from pendulum_window import myWindow
+
 
 '''
 # Description of Simulation 
@@ -233,7 +238,7 @@ class Pendulum(myWindow):
 
         self.reset_real_time()
 
-        MAX_ITE = int(1000.0/dt_sim)
+        MAX_ITE = int(1000000.0/dt_sim)
         ite = 0
         while ite < MAX_ITE:
             ite += 1
@@ -241,8 +246,8 @@ class Pendulum(myWindow):
 
             # print time and q
             if ite % (PRINT_INTERVAL/dt_disp) == 0:
-                print("t=%.2f, ddq=%.2f" %
-                    (self.t_sim, self.ddq))
+                print("t={:.2f}, q={:.2f}, dq={:.2f}, ddq={:.2f}".format
+                    (self.t_sim, self.q, self.dq, self.ddq))
 
             # read current q from window
             # (because user might reset the link's position)

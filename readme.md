@@ -12,7 +12,7 @@ Final Project of EECS 395/495 Optimization in DL and make_list
 * The motion of link is solved from Eular-Lagrange Equation.
 
 ## How to run:
-$ python3 src/run_this.py
+$ python3 run_this.py
 
 ## Dependency
 Python 3.6
@@ -20,8 +20,7 @@ tkinter
 tensorflow
 etc.
 
-## Files
-1. [pendulum_simulation.py]
+# Files
 see pendulum_env.py
 
 # Algorithm
