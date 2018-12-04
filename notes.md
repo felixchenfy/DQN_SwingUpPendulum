@@ -42,3 +42,15 @@ dq比重增加后，pend就倾向于在delta_theta的位置保持不动，而不
     learning_rate=0.0005,
     reward_decay=0.995,
 
+# 星期4
+  # params testing result
+    # learning_rate=0.0002 is too slow, and train goes to local minimum
+    #               0.0005 is also not converged
+    # change reward_decay to be 0.999: get sticked
+    # change reward_decay to be 0.997: 50k steps, swing over 90 degrees. 600k, still swinging loops, not converged.
+    # change reward_decay=0.95, replace_target_iter to be 400:
+
+    # inv_pend train for 120k, down_pend train for 1000k, basically converged. 
+    #       Still oscillation in down poses, might due to too large step size? I will save it first.
+
+    

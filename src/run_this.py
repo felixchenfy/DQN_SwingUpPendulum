@@ -12,20 +12,12 @@ PROJECT_PATH=os.path.join(os.path.dirname(__file__))+ "/../"
 sys.path.append(PROJECT_PATH)
 
 
-# Coordinate: When link1 is vertically upward, the angle is 0,
-#   which is different from pendulum_simulation.py
-Q_OFFSET=pi/2
-
-# Transform angle to [-pi, pi). When link1 is vertically upward, angle=0
-def trans_angle(theta):
-    return (theta-Q_OFFSET+pi) % (2*pi)-pi
-
 # Choose a scenario
 Inverted_Pendulum=False
 Swing_Up_Pendulum=not Inverted_Pendulum
 
 # set mode
-Training_Mode=True
+Training_Mode=False
 Testing_Mode=not Training_Mode
 
 # Whether use random initial position (q, dq)
@@ -42,6 +34,14 @@ if Testing_Mode:
 # time period of taking action and observation
 observation_interval=0.01 # seconds
 
+# Specify coordinate:
+# When link1 is vertically upward, the angle is 0,
+#   which is different from pendulum_simulation.py, so a offset is needed.
+Q_OFFSET=pi/2
+
+# Transform angle to [-pi, pi). When link1 is vertically upward, angle=0
+def trans_angle(theta):
+    return (theta-Q_OFFSET+pi) % (2*pi)-pi
 
 # set weights input/output
 Start_New_Train=False
@@ -289,15 +289,7 @@ if __name__ == "__main__":
                         e_greedy_increment=None,
                         # output_graph=True,
                     )
-    # params testing result
-    # learning_rate=0.0002 is too slow, and train goes to local minimum
-    #               0.0005 is also not converged
-    # change reward_decay to be 0.999: get sticked
-    # change reward_decay to be 0.997: 50k steps, swing over 90 degrees. 600k, still swinging loops, not converged.
-    # change reward_decay=0.95, replace_target_iter to be 400:
-
-    # inv_pend train for 120k, down_pend train for 1000k, basically converged. 
-    #       Still oscillation in down poses, might due to too large step size? I will save it first.
+  
 
     # start sim and train
     env.after(100, run_pendulum)
