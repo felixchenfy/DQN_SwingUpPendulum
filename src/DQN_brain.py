@@ -93,7 +93,7 @@ class DeepQNetwork:
         n_neuron_laywer2=15
         n_neuron_laywer3=20
         n_neuron_laywer4=15
-        n_neuron_laywer5=10
+        # n_neuron_laywer5=10
         with tf.variable_scope('eval_net'):
             e1 = tf.layers.dense(self.s, n_neuron_laywer1, tf.nn.relu, kernel_initializer=w_initializer,
                                  bias_initializer=b_initializer, name='e1')

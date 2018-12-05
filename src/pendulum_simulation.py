@@ -54,10 +54,10 @@ by solving E-L eqs, we get q''[t]
 Inverted_Pendulum=True
 Swing_Up_Pendulum=not Inverted_Pendulum
 
-# Main parameters
-Friction_Coefficient=0.1
-Torque_Maginitude=2
-Force_Noise=0.01
+# Set main parameters
+FRICTION_COEF=0.1
+TORQUE_MAGNITUDE=2
+NOISE_OF_FORCE=0.01
 
 # trans angle to [0, 2*pi]
 def angle_trans_to_pi(theta):
@@ -108,8 +108,8 @@ class Pendulum(myWindow):
         self.i = 1.0/3*self.m*self.R**2  # inertia
 
         self.g = 9.8
-        self.cf = Friction_Coefficient  # coef of friction, where friction = - cf * dq
-        self.fNoise = Force_Noise
+        self.cf = FRICTION_COEF  # coef of friction, where friction = - cf * dq
+        self.fNoise = NOISE_OF_FORCE
 
         self.q = 0.0
         self.dq = 0.0
@@ -121,7 +121,7 @@ class Pendulum(myWindow):
 
         # user input
         self.torque = 0
-        self.Torque_Maginitude=Torque_Maginitude # self.torque = 0, +, - Torque_Maginitude
+        self.Torque_Maginitude=TORQUE_MAGNITUDE # self.torque = 0, +, - TORQUE_MAGNITUDE
 
         # pre-compute some qualities
         self.I = 4*self.i + self.m*self.R**2

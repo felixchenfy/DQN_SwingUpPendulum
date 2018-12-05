@@ -6,11 +6,11 @@ from DQN_brain import DeepQNetwork
 from math import pi
 import time, math
 import numpy as np
-
 import sys, os
 PROJECT_PATH=os.path.join(os.path.dirname(__file__))+ "/../"
 sys.path.append(PROJECT_PATH)
 
+# This is the main file of my project.
 
 # Choose a scenario
 Inverted_Pendulum=False
@@ -49,9 +49,9 @@ if Training_Mode:
     if Start_New_Train:
         load_path=None
     else:
-        load_path=PROJECT_PATH+"/tmp/model.ckpt"
+        load_path=PROJECT_PATH+"/weights/model.ckpt"
     
-    save_path=PROJECT_PATH+"/tmp/model.ckpt"
+    save_path=PROJECT_PATH+"/weights/model.ckpt"
 
     dt_disp = 0.1 # display for every dt_disp seconds. 
     display_after_n_seconds=0
@@ -59,7 +59,7 @@ if Training_Mode:
     # flag_real_time_display=True
 
 if Testing_Mode:
-    load_path=PROJECT_PATH+"/tmp/model.ckpt"
+    load_path=PROJECT_PATH+"/weights/model.ckpt"
 
     dt_disp = 0.01 # display for every dt_disp seconds. Set high to display more smoothly
     display_after_n_seconds=0
