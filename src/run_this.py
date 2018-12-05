@@ -1,27 +1,47 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# Run this file by:
+# $ python3 src/run_this.py --testing true --swing_up_pend true
+# testing: Testing mode, or Training mode
+# swing_up_pend: Swing-up Pendulum, or Inverted Pendulum
+
 from pendulum_simulation import Pendulum
 from DQN_brain import DeepQNetwork
 from math import pi
 import time, math
 import numpy as np
+import argparse
+
 import sys, os
 PROJECT_PATH=os.path.join(os.path.dirname(__file__))+ "/../"
 sys.path.append(PROJECT_PATH)
 
 # This is the main file of my project.
 
-# Choose a scenario
-Inverted_Pendulum=False
-Swing_Up_Pendulum=not Inverted_Pendulum
+# Set command line input
+parser = argparse.ArgumentParser()
+parser.add_argument('--testing',required=False,default="True",
+    help='Testing mode, or Training mode')
+parser.add_argument('--swing_up_pend',required=False,default="True",
+    help='Swing-up Pendulum, or Inverted Pendulum')
+args = parser.parse_args(sys.argv[1:])
+def check_input(s):
+    if s.lower() not in {"true","false"}:
+        raise argparse.ArgumentTypeError('T/true or F/false expected')
+check_input(args.testing)
+check_input(args.swing_up_pend)
 
-# set mode
-Training_Mode=False
-Testing_Mode=not Training_Mode
+# Choose a scenario
+Swing_Up_Pendulum = args.swing_up_pend.lower()=="true"
+Inverted_Pendulum = not Swing_Up_Pendulum
+
+# Set mode
+Testing_Mode=args.testing.lower()=="true"
+Training_Mode = not Testing_Mode
 
 # Whether use random initial position (q, dq)
-Random_Init_Pose=True
+Random_Init_Pose=False
 
 # Max steps per episode
 if Inverted_Pendulum:
@@ -299,3 +319,7 @@ if __name__ == "__main__":
     if Training_Mode:
         RL.save_model(save_path)
     # RL.plot_cost()
+    try:
+        os.system('xset r on')
+    except:
+        pass

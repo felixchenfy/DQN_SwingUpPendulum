@@ -5,7 +5,7 @@ This is the final project of EECS 395/495: Optimization in Deep Learning and Mac
 
 # Introction
 ## Intro
-* The goal of the game is to swing up a pendulum and keep it inverted.
+* The goal of the game is to swing up a pendulum (Swing-Up Pendulum) and keep it inverted (Inverted Pendulum).
 * User or AI player could input 3 types of torque (zero, positive, negative) by pressing "j" or "k".
 * The GUI of the game utilizes the "tkinter" library. The motion of link is solved from Eular-Lagrange Equations.
 * The AI of this game uses a reinforcement learning algorithm called Deep Q-network. It's an modified version of the original Q-learning algorithm by using **Neural Network** to evaluate the quality of taking action A at state S, and thus to know the best action to take. Two extra techniques called **Experience Replay** and **Fixed Q-targets** are also included for updating neural netork's weights.
@@ -165,12 +165,12 @@ I conclude some experience for tuning the pamameters.
 ## 5. Two-phase training
 
 It would be very difficult to train this "swing up pendulum" from scratch, since there is too few chances for the pendulum to stay upright and experience the success. Thus, I trained it in two phases:  
-1. Train an inverted pendulum.
-2. Train to swing up.
+1. First train an inverted pendulum.
+2. Then train the swinging up.
 
 More specifically, I trained this in four different stages:
-1. Train an inverted pendulum which starts from up-right position.
-2. Train an inverted pendulum, which starts randomly at an angle of $[-pi/3, pi/3]$ and a random velocity towards the center.
+1. Train an inverted pendulum which starts from upright position.
+2. Train an inverted pendulum, which starts randomly with an angle between $[-pi/3, pi/3]$ and a random velocity towards the center.
 3. Train the swing-up pendulum, with random initial angle and velocity.
 4. Train the swing-up pendulum, with static initial angle of $-pi$.
 
