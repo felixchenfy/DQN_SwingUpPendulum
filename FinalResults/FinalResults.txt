@@ -7,9 +7,8 @@ Stage 2:
 Total simulation time=3017.96. Real world training time=232.57.
 
 Stage 3:
-Total simulation time=4133.50. Real world training time=324.73.
+Total simulation time=15989.00. Real world training time=1169.60.
 
 Stage 4:
-Total simulation time=12133.50. Real world training time=888.56.
 
 

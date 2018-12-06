@@ -18,7 +18,7 @@ strtitle=[
     "Swing-up pendulum. Initial pose is hanging-down.",
 ]
 
-stage_idx=4
+stage_idx=3
 filename="stage"+str(stage_idx)+"_cost_history"
 cost_history=np.loadtxt(CURRENT_PATH+"/"+filename+".txt", delimiter=" ")
 
