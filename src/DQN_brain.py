@@ -78,6 +78,7 @@ class DeepQNetwork:
             tf.summary.FileWriter("logs/", self.sess.graph)
 
         self.sess.run(tf.global_variables_initializer())
+
         self.cost_history = []
         self._tmp_cost_history = []
 
@@ -91,7 +92,7 @@ class DeepQNetwork:
         w_initializer, b_initializer = tf.random_normal_initializer(0., 0.3), tf.constant_initializer(0.1)
 
 
-        # ------------------ build evaluate_net ------------------
+        # ------------------ build eval_net ------------------
         n_neuron_laywer1=10
         n_neuron_laywer2=15
         n_neuron_laywer3=20
@@ -111,7 +112,7 @@ class DeepQNetwork:
             self.q_eval = tf.layers.dense(e4, self.n_actions, kernel_initializer=w_initializer,
                                           bias_initializer=b_initializer, name='q')
 
-        # ------------------ build target_net ------------------
+        # ------------------ build target_net (should be the same as eval_net) ------------------
         with tf.variable_scope('target_net'):
             t1 = tf.layers.dense(self.s_, n_neuron_laywer1, tf.nn.relu, kernel_initializer=w_initializer,
                                  bias_initializer=b_initializer, name='t1')
@@ -127,8 +128,8 @@ class DeepQNetwork:
                                           bias_initializer=b_initializer, name='q_next')
 
 
-        # # ------------------ build evaluate_net ------------------
-        # # This doesn't work
+        # # ------------------ build eval_net ------------------
+        # # Result: This doesn't work
         # n_neuron_laywer1=10
         # n_neuron_laywer2=10
         # dropout_rate=0.25
@@ -155,12 +156,21 @@ class DeepQNetwork:
 
         with tf.variable_scope('q_target'):
             q_target = self.r + self.gamma * tf.reduce_max(self.q_next, axis=1, name='Qmax_s_')    # shape=(None, )
+            # Only returns the predition value of the biggest one, because that's the action taken at current state.
+            # only this value is compared with q_eval, and then used for gradient descent.
             self.q_target = tf.stop_gradient(q_target)
+
         with tf.variable_scope('q_eval'):
+            # Same as above, only extract the prediction value corresponding to the current action.
+            # But this time, since this is the network for predicted quality (similar to testing),
+            #   we cannot choose the max,
+            #   Instead, extract it from the index of action.
             a_indices = tf.stack([tf.range(tf.shape(self.a)[0], dtype=tf.int32), self.a], axis=1)
             self.q_eval_wrt_a = tf.gather_nd(params=self.q_eval, indices=a_indices)    # shape=(None, )
 
         with tf.variable_scope('loss'):
+            # The loss is the difference between the prediction between q_eval and q_target,
+            #   on the specific {state, action} pair
             self.loss = tf.reduce_mean(tf.squared_difference(self.q_target, self.q_eval_wrt_a, name='TD_error'))
 
         with tf.variable_scope('train'):
@@ -211,13 +221,18 @@ class DeepQNetwork:
                 self.s_: batch_memory[:, -self.n_states:],
             })
 
-        if self.record_history: # store history for every store_interval seconds
-            store_interval=1 # seconds
+        if self.record_history:
             self._tmp_cost_history.append(cost)
-            num=len(self._tmp_cost_history)
-            if num>1 and self.action_step_counter%int(store_interval*1/self.observation_interval)==0:
-                mean_cost=sum(self._tmp_cost_history)/num
-                self.cost_history.append(mean_cost)
+            self.store_interval_time = 5.0 # store history for every X seconds
+            store_interval = int(self.store_interval_time*1/self.observation_interval) # store for every X steps
+
+            if self.action_step_counter >= (1+len(self.cost_history))*store_interval:
+                num=len(self._tmp_cost_history)
+                if num==0:
+                    self.cost_history.append(None)
+                else:
+                    mean_cost=sum(self._tmp_cost_history)/num
+                    self.cost_history.append(mean_cost)
                 self._tmp_cost_history=[]
 
         self.steps+=1
@@ -236,8 +251,11 @@ class DeepQNetwork:
         
     def plot_cost(self):
         import matplotlib.pyplot as plt
+        
         cost_his=self.cost_history
-        plt.plot(np.arange(len(cost_his)), cost_his)
+        n=len(cost_his)
+        t=np.arange(1,n+1)*self.store_interval_time
+        plt.plot(t, cost_his)
         plt.ylabel('Cost')
         plt.xlabel('Time (second, in simulation)')
         plt.show()

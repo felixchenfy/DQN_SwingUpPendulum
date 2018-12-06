@@ -6,7 +6,8 @@ import sys, os
 CURRENT_PATH=os.path.join(os.path.dirname(__file__))
 
 def plot_cost(cost_his):
-    plt.plot(np.arange(len(cost_his)), cost_his)
+    store_interval_time=5.0
+    plt.plot(np.arange(len(cost_his))*store_interval_time, cost_his)
     plt.ylabel('Cost')
     plt.xlabel('Time (second, in simulation)')
 
