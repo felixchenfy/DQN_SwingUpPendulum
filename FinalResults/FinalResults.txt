@@ -1,1 +1,6 @@
 
+
+Stage 1:
+Total simulation time=1809.22. Real world training time=121.85.
+
+
