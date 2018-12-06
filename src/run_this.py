@@ -195,7 +195,7 @@ class RL_Pendulum(Pendulum):
         if abs_q<pi*2/3:
             reward= r(abs_q,abs_dq)
         else:
-            reward= r(pi*2/3,4)-0.1*(4.0-abs_dq)**2
+            reward= r(pi*2/3,4)-1.0*(4.0-abs_dq)**2
 
         return reward
 
