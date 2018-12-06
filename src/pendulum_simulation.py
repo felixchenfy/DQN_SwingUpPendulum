@@ -18,11 +18,7 @@ import math
 import time
 from math import pi
 
-import sys, os
-PROJECT_PATH=os.path.join(os.path.dirname(__file__))+ "/../"
-sys.path.append(PROJECT_PATH)
-
-from lib.Lunge_Kutta import rK3  # Lunge-Kutta Integration method
+from Lunge_Kutta import rK3  # Lunge-Kutta Integration method
 from pendulum_window import myWindow
 
 

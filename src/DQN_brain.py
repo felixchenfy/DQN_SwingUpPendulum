@@ -31,7 +31,8 @@ class DeepQNetwork:
             e_greedy_increment=0.001,
             save_steps=-1,
             output_graph=False,
-            flag_record_history=True,
+            record_history=True,
+            observation_interval=0.01,
     ):
         self.n_actions = n_actions
         self.n_states = n_states
@@ -43,11 +44,12 @@ class DeepQNetwork:
         self.batch_size = batch_size
         self.epsilon_increment = e_greedy_increment
         self.epsilon = 0 if e_greedy_increment is not None else self.epsilon_max
-        self.flag_record_history=flag_record_history
-
+        self.record_history=record_history
+        self.observation_interval=observation_interval
   
         # total learning step
         self.learn_step_counter = 0
+        self.action_step_counter = 0
 
         # initialize zero memory [s, a, r, s_]
         self.memory = np.zeros((self.memory_size, n_states * 2 + 2))
@@ -76,7 +78,8 @@ class DeepQNetwork:
             tf.summary.FileWriter("logs/", self.sess.graph)
 
         self.sess.run(tf.global_variables_initializer())
-        self.cost_his = []
+        self.cost_history = []
+        self._tmp_cost_history = []
 
     def _build_net(self):
         # ------------------ all inputs ------------------------
@@ -182,6 +185,8 @@ class DeepQNetwork:
             action = np.argmax(actions_value)
         else:
             action = np.random.randint(0, self.n_actions)
+
+        self.action_step_counter+=1
         return action
 
     def learn(self):
@@ -205,8 +210,15 @@ class DeepQNetwork:
                 self.r: batch_memory[:, self.n_states + 1],
                 self.s_: batch_memory[:, -self.n_states:],
             })
-        if self.flag_record_history:
-            self.cost_his.append(cost)
+
+        if self.record_history: # store history for every store_interval seconds
+            store_interval=1 # seconds
+            self._tmp_cost_history.append(cost)
+            num=len(self._tmp_cost_history)
+            if num>1 and self.action_step_counter%int(store_interval*1/self.observation_interval)==0:
+                mean_cost=sum(self._tmp_cost_history)/num
+                self.cost_history.append(mean_cost)
+                self._tmp_cost_history=[]
 
         self.steps+=1
         if self.save_steps>0 and self.steps%self.save_steps==0:
@@ -224,9 +236,10 @@ class DeepQNetwork:
         
     def plot_cost(self):
         import matplotlib.pyplot as plt
-        plt.plot(np.arange(len(self.cost_his)), self.cost_his)
+        cost_his=self.cost_history
+        plt.plot(np.arange(len(cost_his)), cost_his)
         plt.ylabel('Cost')
-        plt.xlabel('training steps')
+        plt.xlabel('Time (second, in simulation)')
         plt.show()
 
 if __name__ == '__main__':

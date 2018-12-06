@@ -1,10 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# Run this file by:
-# $ python3 src/run_this.py --testing true --swing_up_pend true
-# testing: Testing mode, or Training mode
-# swing_up_pend: Swing-up Pendulum, or Inverted Pendulum
+'''
+Run this file by:
+$ python3 src/run_this.py --testing true --swing_up_pend true
+
+If you want to retrain the model from scratch, you need 4 steps:
+$ python3 src/run_this.py --testing false --swing_up_pend false --retrain true
+$ python3 src/run_this.py --testing false --swing_up_pend false --random_init true
+$ python3 src/run_this.py --testing false --swing_up_pend true 
+$ python3 src/run_this.py --testing false --swing_up_pend true --random_init true
+
+Use -h to see the arguments:
+$ python3 src/run_this.py -h
+
+'''
 
 from pendulum_simulation import Pendulum
 from DQN_brain import DeepQNetwork
@@ -13,24 +23,38 @@ import time, math
 import numpy as np
 import argparse
 
+from mylib import io
+
 import sys, os
 PROJECT_PATH=os.path.join(os.path.dirname(__file__))+ "/../"
 sys.path.append(PROJECT_PATH)
 
 # This is the main file of my project.
 
-# Set command line input
+# Set command line inputs
 parser = argparse.ArgumentParser()
+
 parser.add_argument('--testing',required=False,default="True",
     help='Testing mode, or Training mode')
+
 parser.add_argument('--swing_up_pend',required=False,default="True",
     help='Swing-up Pendulum, or Inverted Pendulum')
+
+parser.add_argument('--retrain',required=False,default="False",
+    help='If true, clear weights, retrain the model. If false, load from /weights')
+
+parser.add_argument('--random_init',required=False,default="False",
+    help='If true, randomly set starting pose, in order to better train the Network.')
+
+# Check if inputs are correct
 args = parser.parse_args(sys.argv[1:])
 def check_input(s):
     if s.lower() not in {"true","false"}:
         raise argparse.ArgumentTypeError('T/true or F/false expected')
 check_input(args.testing)
 check_input(args.swing_up_pend)
+check_input(args.retrain)
+check_input(args.random_init)
 
 # Choose a scenario
 Swing_Up_Pendulum = args.swing_up_pend.lower()=="true"
@@ -39,32 +63,33 @@ Inverted_Pendulum = not Swing_Up_Pendulum
 # Set mode
 Testing_Mode=args.testing.lower()=="true"
 Training_Mode = not Testing_Mode
+Start_New_Train=args.retrain.lower()=="true"
 
 # Whether use random initial position (q, dq)
-Random_Init_Pose=False
-
-# Max steps per episode
-if Inverted_Pendulum:
-    Max_Steps_Per_Episode=1000
-if Swing_Up_Pendulum:
-    Max_Steps_Per_Episode=2000
-if Testing_Mode: 
-    Max_Steps_Per_Episode=800 # test for only 8 seconds
+Random_Init_Pose=args.random_init.lower()=="true"
 
 # time period of taking action and observation
 observation_interval=0.01 # seconds
+
+# Max steps per episode (After one episode, the scene will reset and the game  will restart.)
+if Inverted_Pendulum:
+    Max_Steps_Per_Episode=1000 # 1000*observation_interval=10s
+if Swing_Up_Pendulum:
+    Max_Steps_Per_Episode=2000
+if Testing_Mode: 
+    Max_Steps_Per_Episode=800 # When testing, only test one episode for 8 seconds
+
 
 # Specify coordinate:
 # When link1 is vertically upward, the angle is 0,
 #   which is different from pendulum_simulation.py, so a offset is needed.
 Q_OFFSET=pi/2
 
-# Transform angle to [-pi, pi). When link1 is vertically upward, angle=0
+# Transform angle to [-pi, pi). Besides, when link1 is upright, angle=0
 def trans_angle(theta):
     return (theta-Q_OFFSET+pi) % (2*pi)-pi
 
-# set weights input/output
-Start_New_Train=False
+# Set weights input/output
 if Training_Mode:
     if Start_New_Train:
         load_path=None
@@ -74,7 +99,7 @@ if Training_Mode:
     save_path=PROJECT_PATH+"/weights/model.ckpt"
 
     dt_disp = 0.1 # display for every dt_disp seconds. 
-    display_after_n_seconds=0
+    display_after_n_seconds=0.0 # When not display, simulation goes faster. So you may set it large.
     flag_real_time_display=False
     # flag_real_time_display=True
 
@@ -230,7 +255,7 @@ def run_pendulum():
             episode_steps+=1
 
             if steps%100==0:
-                print("episode=%d, episode_step=%d, total steps=%d, time=%.2f"%(episode,episode_steps, steps,env.t_sim))
+                print("total steps=%d, episode=%d, episode_step=%d, episode time=%.2f"%(steps, episode,episode_steps,env.t_sim))
 
             # RL: choose action based on states
             action = RL.choose_action(states)
@@ -285,14 +310,14 @@ def run_pendulum():
 
 if __name__ == "__main__":
 
-    # run pendulum game
+    # Setup the pendulum game
     if Swing_Up_Pendulum:
         q_init=pi
     elif Inverted_Pendulum:
         q_init=0
     env = RL_Pendulum(q_init=q_init, dq_init=0)
 
-    # deep Q-network
+    # Set up Deep Q-network
     if Training_Mode:
         e_greedy=0.9
     else: # testing mode
@@ -305,20 +330,38 @@ if __name__ == "__main__":
                         replace_target_iter=400,
                         batch_size=128,
                         memory_size=4000,
-                        flag_record_history=False,
                         e_greedy_increment=None,
+                        record_history=True,
                         # output_graph=True,
+                        observation_interval=observation_interval,
                     )
   
 
-    # start sim and train
+    # Run simulation and training
+    time_start=time.time()
     env.after(100, run_pendulum)
     env.mainloop()
+    
+    # Print total simulation and real world time
+    time_end=time.time()-time_start
+    print("\n------------------------------------\n")
+    print("\nTotal simulation time={:.2f}. Real world training time={:.2f}.".format(
+        RL.action_step_counter*observation_interval,time_end
+    ))
 
-
+    # Save weights
     if Training_Mode:
         RL.save_model(save_path)
-    # RL.plot_cost()
+
+    # Save cost_history to file and plot it 
+    if not Testing_Mode and RL.record_history:
+        filename=PROJECT_PATH + "/cost_history/" + "costhist"
+        io.savetxt(filename, RL.cost_history)
+        print("Save cost to {} ...".format(filename))
+        RL.plot_cost()
+
+    # Before running the game, I have disable the continuous keyboard press.
+    #   Now, restore it to normal.
     try:
         os.system('xset r on')
     except:

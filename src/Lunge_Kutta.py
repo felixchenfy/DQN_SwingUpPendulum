@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# Lunge Kutta: 4-th order numerical integration method
+
 # This is mainly copied from here:
 # https://www.codeproject.com/Tips/792927/Fourth-Order-Runge-Kutta-Method-in-Python
 
