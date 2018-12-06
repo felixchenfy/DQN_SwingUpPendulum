@@ -10,6 +10,7 @@ def plot_cost(cost_his):
     plt.plot(np.arange(len(cost_his))*store_interval_time, cost_his)
     plt.ylabel('Cost')
     plt.xlabel('Time (second, in simulation)')
+    plt.yscale("log")
 
 strtitle=[
     "Inverted pendulum. Initial pose is upright.",
@@ -18,7 +19,7 @@ strtitle=[
     "Swing-up pendulum. Initial pose is random.",
 ]
 
-stage_idx=2
+stage_idx=4
 filename="stage"+str(stage_idx)+"_cost_history"
 cost_history=np.loadtxt(CURRENT_PATH+"/"+filename+".txt", delimiter=" ")
 

@@ -3,7 +3,7 @@
 
 '''
 Run this file by:
-$ python3 src/run_this.py --testing true --swing_up_pend true
+$ python3 src/run_this.py --testing true --swing_up_pend true --random_init true
 
 If you want to retrain the model from scratch, you need 4 steps:
 $ python3 src/run_this.py --testing false --swing_up_pend false --retrain true
@@ -319,7 +319,7 @@ if __name__ == "__main__":
 
     # Set up Deep Q-network
     if Training_Mode:
-        e_greedy=0.9
+        e_greedy=0.95
     else: # testing mode
         e_greedy=1.0
 
