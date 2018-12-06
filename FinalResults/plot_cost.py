@@ -14,11 +14,11 @@ def plot_cost(cost_his):
 strtitle=[
     "Inverted pendulum. Initial pose is upright.",
     "Inverted pendulum. Initial pose is random.",
-    "Swing-up pendulum. Initial pose is hanging-down.",
     "Swing-up pendulum. Initial pose is random.",
+    "Swing-up pendulum. Initial pose is hanging-down.",
 ]
 
-stage_idx=3
+stage_idx=4
 filename="stage"+str(stage_idx)+"_cost_history"
 cost_history=np.loadtxt(CURRENT_PATH+"/"+filename+".txt", delimiter=" ")
 

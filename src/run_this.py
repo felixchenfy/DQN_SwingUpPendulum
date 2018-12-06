@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# This is the main file of my project.
+
 '''
-Run this file by:
+Run this file to see how AI swings up the pendulum:
 $ python3 src/run_this.py --testing true --swing_up_pend true
 
 If you want to retrain the model from scratch, you need 4 steps:
@@ -13,6 +15,9 @@ $ python3 src/run_this.py --testing false --swing_up_pend true
 
 Use -h to see the arguments:
 $ python3 src/run_this.py -h
+
+If you want to play this game by yourself, run this:
+$ python3 src/pendulum_simulation.py
 
 '''
 
@@ -29,7 +34,6 @@ import sys, os
 PROJECT_PATH=os.path.join(os.path.dirname(__file__))+ "/../"
 sys.path.append(PROJECT_PATH)
 
-# This is the main file of my project.
 
 # Set command line inputs
 parser = argparse.ArgumentParser()
