@@ -158,7 +158,7 @@ I conclude some experience for tuning the pamameters.
 
     The larger it is, the further future is considered.
 * e-greedy  
-    This decides the probability for pendulumn to choose the best action to take. The smaller it is, the training explores more unknown spaces.
+    This decides the probability for pendulumn to choose the best action to take. The smaller it is, the training explores more unknown spaces. I set it as 0.95 here.
 * Others  
     There are other important params such as: replace_target_iter, batch_size, memory_size. They are definitely important, but I just don't have a good idea about how to set them. I've tuned them for several values, but there is no apparent conclusion. One thing I do know is that when making faster observation, these values should be inceased.
 

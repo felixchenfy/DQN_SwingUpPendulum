@@ -2,8 +2,13 @@
 # -*- coding: utf-8 -*-
 
 '''
+
 Run this file by:
 $ python3 src/run_this.py --testing true --swing_up_pend true --random_init true
+You can see the AI swings up the pendulum and keep it inverted.
+
+If you want to play it by yourself, please run:
+$ python3 src/pendulum_simulation.py
 
 If you want to retrain the model from scratch, you need 4 steps:
 $ python3 src/run_this.py --testing false --swing_up_pend false --retrain true
