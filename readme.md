@@ -162,29 +162,93 @@ I conclude some experience for tuning the pamameters.
 * Others  
     There are other important params such as: replace_target_iter, batch_size, memory_size. They are definitely important, but I just don't have a good idea about how to set them. I've tuned them for several values, but there is no apparent conclusion. One thing I do know is that when making faster observation, these values should be inceased.
 
-## 5. Two-phase training
+    
+# 4. Result
+
+
+## 5. Training and results
 
 It would be very difficult to train this "swing up pendulum" from scratch, since there is too few chances for the pendulum to stay upright and experience the success. Thus, I trained it in two phases:  
 1. First train an inverted pendulum.
 2. Then train the swinging up.
 
-More specifically, I trained this in four different stages:
-1. Train an inverted pendulum which starts from upright position.
-2. Train an inverted pendulum, which starts randomly with an angle between $[-pi/3, pi/3]$ and a random velocity towards the center.
-3. Train the swing-up pendulum, with random initial angle and velocity.
-4. Train the swing-up pendulum, with static initial angle of $-pi$.
+More specifically, I trained this in four different stages: 
 
-The result and detials are in next section.
+(1) Inverted pendulum, fixed start.  
+(2) Inverted pendulum, random start.  
+(3) Swing-up pendulum, random start.  
+(4) Swing-up pendulum, fixed start.   
 
-## Result
+The details and results are as follows
+
+### 5.1 Inverted pendulum, fixed start
+
+What to do: Train an inverted pendulum which starts from upright position.
+
+Reason: This is the simpliest task. Do this first, so when we swing-up a pendulum, it has a better chance to stay up-right and receives more reward.
+
+Training: Total simulation time=2008.91. Real world training time=125.64.
+
+Cost function:  
+![](FinalResults/stage1_cost_history.jpg)
+
+Result:
+The pendulum can always be kept inverted.
+THe cost function is descending.
+
+### 5.3 Inverted pendulum, random start.
+
+What to do: Train an inverted pendulum, which starts randomly with an angle between $[-pi/3, pi/3]$ and a random velocity towards the center.
+
+Reason: This training setting imitates the scene that a pendulum is swinged up. Thus, it's also for improving the chance of making the swing-up pendulum converges to the inverted state.
+
+Total simulation time=3017.96. Real world training time=232.57.
+
+Cost function:  
+![](FinalResults/stage2_cost_history.jpg)
 
 
-inv_pend train for 120k, down_pend train for 1000k, basically converged. 
+Result:
+The pendulum can goes to the inverted state if it has a good starting pose.
 
-Still oscillation in down poses, might due to too large step size? I will save it first.
+Though the cost function is not descending, the actual performance of the game AI is increasing. The tutorial I read said that this is the correct curve for the cost function of Reinforcement learning. 
 
-    
-# Result
-
+The reason for the peaks is that the robot is exploring a new state. However, I couldn't find a good explanation for why the averaging cost is not descending.
 
 
+### 5.3 Swing-up pendulum, random start.  
+
+What to do: Train the swing-up pendulum, with random initial angle and velocity.
+
+Reason: After experiment, I found that it would still be too difficult for the pendulum to start from the hanging-down pose. So I use this training stage to make the task converges faster.
+
+Total simulation time=31111.60. Real world training time=2005.30.
+
+Cost function:  
+![](FinalResults/stage3_cost_history.jpg)
+
+Result:
+This is the most crutial step for training inverted pendulum. I trained it for 31111.60s in the simulated game, to ensure the training has covered most of the state space, and to ensure the pendulum can always swing to the inverted state. 
+
+
+### 5.4 Swing-up pendulum, fixed start.
+
+What to do: Train the swing-up pendulum, with static initial angle of $-pi$.
+
+Reason: This is the training stage, which must make sure the pendulum can be swinged up from the initial static state.
+
+Total simulation time=31111.60. Real world training time=2005.30.
+
+Cost function:  
+![](FinalResults/stage4_cost_history.jpg)
+
+Total simulation time=6008.90. Real world training time=400.10.
+
+Result:
+The AI plays the game pretty well!
+Please see my video demo
+
+
+# 7. Conclusion
+
+In this project, I used Deep Q-network (DQN) to train an AI to swing up a pendulum and keep it inverted.

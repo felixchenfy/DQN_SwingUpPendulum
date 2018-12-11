@@ -10,7 +10,7 @@ def plot_cost(cost_his):
     plt.plot(np.arange(len(cost_his))*store_interval_time, cost_his)
     plt.ylabel('Cost')
     plt.xlabel('Time (second, in simulation)')
-    plt.yscale("log")
+    plt.yscale("linear")
 
 strtitle=[
     "Inverted pendulum. Initial pose is upright.",
