@@ -260,7 +260,7 @@ def run_pendulum():
             episode_steps+=1
 
             if steps%100==0:
-                print("total steps=%d, episode=%d, episode_step=%d, episode time=%.2f"%(steps, episode,episode_steps,env.t_sim))
+                print("Total steps=%d, sim time = %.2fs. In %dth episode, %.2f seconds."%(steps, steps*observation_interval, episode,env.t_sim))
 
             # RL: choose action based on states
             action = RL.choose_action(states)
