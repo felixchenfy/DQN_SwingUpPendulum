@@ -7,7 +7,11 @@ Instructor: Prof. Jeremy Watt
 Student: Feiyu Chen  
 
 ## Video Intro
-I made a video to introduce how to run my codes:  
+
+Video of AI plays this game:  
+http://feiyuchen.com/wp-content/uploads/eecs395_AI_plays_game.mp4
+
+I also made a 5-minute video to introduce this project:  
 http://feiyuchen.com/wp-content/uploads/DQN_swing_up_pendulum.mp4
 
 ## Contents
