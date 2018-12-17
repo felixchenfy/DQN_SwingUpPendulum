@@ -6,6 +6,11 @@ Final Project of EECS 395/495: Optimization Techniques for Machine Learning and 
 Instructor: Prof. Jeremy Watt  
 Student: Feiyu Chen  
 
+## Reference
+
+The core code of DQN (Nerual network, framework for training) in my project was from this tutorial:  
+https://github.com/MorvanZhou/Reinforcement-learning-with-tensorflow/tree/master/contents/5_Deep_Q_Network  
+
 ## Video Intro
 
 Video of AI plays this game:  
