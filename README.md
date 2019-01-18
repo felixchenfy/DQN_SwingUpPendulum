@@ -258,11 +258,13 @@ The weights between q and dq took me some time to finetune.
 
 * Input:
 2 neurons (states: q and dq)  
+
 * Hidden: 4 fully connected layers  
 Sizes: 10, 15, 20, 15.  
 Use Relu for activation.  
+
 * Output: 3 neurous  
-Fully connected and direct output.  
+Fully connected layer + cost function of L2 (only on the element corresponding to the correct action).   
 The three classes are: No toruque, counter-clockwise, or clockwise torque.
 
 How I choose this structure?  
