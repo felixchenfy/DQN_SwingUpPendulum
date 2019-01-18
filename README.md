@@ -264,7 +264,7 @@ Sizes: 10, 15, 20, 15.
 Use Relu for activation.  
 
 * Output: 3 neurous  
-Fully connected layer + cost function of L2 (only on the element corresponding to the correct action).   
+Fully connected layer + cost function of L2 on the prediction corresponding to the correct action).   
 The three classes are: No toruque, counter-clockwise, or clockwise torque.
 
 How I choose this structure?  
